@@ -29,7 +29,9 @@ const getUser = async (req, res) => {
       return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
     }
     if (err.statusCode === NOT_FOUND) {
-      return res.status(NOT_FOUND).json({ message: err.message });
+      return res
+        .status(NOT_FOUND)
+        .json({ message: "An error has occurred on the server." });
     }
     return res
       .status(SERVER_ERROR)
