@@ -1,5 +1,10 @@
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  FORBIDDEN,
+  SERVER_ERROR,
+} = require("../utils/errors");
 
 const getClothingItems = async (req, res) => {
   try {
@@ -38,13 +43,22 @@ const createClothingItem = async (req, res) => {
 
 const deleteClothingItem = async (req, res) => {
   try {
-    await ClothingItem.findByIdAndDelete(req.params.clothingItemId).orFail(
-      () => {
-        const error = new Error("Clothing item not found");
-        error.statusCode = 404;
-        throw error;
-      }
-    );
+    const clothingItem = await ClothingItem.findById(
+      req.params.clothingItemId
+    ).orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    });
+
+    if (clothingItem.owner.toString() !== req.user._id) {
+      res
+        .status(FORBIDDEN)
+        .json({ message: "You are not authorized to delete this item" });
+      return;
+    }
+
+    await ClothingItem.findByIdAndDelete(req.params.clothingItemId);
     res.status(200).json({ message: "Clothing item deleted successfully" });
   } catch (err) {
     if (err.name === "CastError") {

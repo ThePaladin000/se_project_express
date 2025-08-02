@@ -1,22 +1,94 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  CONFLICT,
+  SERVER_ERROR,
+} = require("../utils/errors");
 
-const getUsers = async (req, res) => {
+const createUser = async (req, res) => {
   try {
-    const users = await User.find({});
-    return res.status(200).json(users);
+    const { name, avatar, email, password } = req.body;
+
+    if (!email || !password || !name || !avatar) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "An error has occurred on the server." });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(CONFLICT)
+        .json({ message: "An error has occurred on the server." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      avatar,
+      email,
+      password: hashedPassword,
+    });
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    return res.status(201).json(userResponse);
   } catch (err) {
     console.error(err);
-    console.log(err.name);
+
+    if (err.name === "ValidationError") {
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "User creation failed: invalid data" });
+    }
+
+    if (err.code === 11000) {
+      return res
+        .status(CONFLICT)
+        .json({ message: "An error has occurred on the server." });
+    }
+
     return res
       .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server." });
   }
 };
 
-const getUser = async (req, res) => {
+const login = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).orFail(() => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "An error has occurred on the server." });
+    }
+
+    const user = await User.findUserByCredentials(email, password);
+
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error(err);
+    console.log(err.name);
+    return res
+      .status(401)
+      .json({ message: "An error has occurred on the server." });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).orFail(() => {
       const error = new Error("User not found");
       error.statusCode = NOT_FOUND;
       throw error;
@@ -25,9 +97,6 @@ const getUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     console.log(err.name);
-    if (err.name === "CastError") {
-      return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
-    }
     if (err.statusCode === NOT_FOUND) {
       return res
         .status(NOT_FOUND)
@@ -39,28 +108,49 @@ const getUser = async (req, res) => {
   }
 };
 
-const createUser = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { name, avatar } = req.body;
-    const user = await User.create({ name, avatar });
-    res.status(201).json(user);
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name, avatar },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).orFail(() => {
+      const error = new Error("User not found");
+      error.statusCode = NOT_FOUND;
+      throw error;
+    });
+
+    return res.status(200).json(user);
   } catch (err) {
     console.error(err);
     console.log(err.name);
-    if (err.name === "ValidationError") {
-      res
-        .status(BAD_REQUEST)
-        .json({ message: "User creation failed: invalid data" });
-    } else {
-      res
-        .status(SERVER_ERROR)
+
+    if (err.statusCode === NOT_FOUND) {
+      return res
+        .status(NOT_FOUND)
         .json({ message: "An error has occurred on the server." });
     }
+
+    if (err.name === "ValidationError") {
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "An error has occurred on the server." });
+    }
+
+    return res
+      .status(SERVER_ERROR)
+      .json({ message: "An error has occurred on the server." });
   }
 };
 
 module.exports = {
-  getUsers,
-  getUser,
+  getCurrentUser,
   createUser,
+  login,
+  updateProfile,
 };
