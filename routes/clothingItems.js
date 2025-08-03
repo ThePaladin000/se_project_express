@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", getClothingItems);
 router.post("/", createClothingItem);
 router.delete("/:clothingItemId", deleteClothingItem);
-router.put("/:itemId/likes", likeItem);
-router.delete("/:itemId/likes", unlikeItem);
+router.put("/:clothingItemId/likes", likeItem);
+router.delete("/:clothingItemId/likes", unlikeItem);
 
 module.exports = router;

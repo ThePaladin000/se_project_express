@@ -21,9 +21,7 @@ const createUser = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(CONFLICT)
-        .json({ message: "An error has occurred on the server." });
+      return res.status(CONFLICT).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,9 +47,7 @@ const createUser = async (req, res) => {
     }
 
     if (err.code === 11000) {
-      return res
-        .status(CONFLICT)
-        .json({ message: "An error has occurred on the server." });
+      return res.status(CONFLICT).json({ message: "Email already exists" });
     }
 
     return res
@@ -80,6 +76,11 @@ const login = async (req, res) => {
   } catch (err) {
     console.error(err);
     console.log(err.name);
+
+    if (err.message === "Incorrect email or password") {
+      return res.status(401).json({ message: "Incorrect email or password" });
+    }
+
     return res
       .status(401)
       .json({ message: "An error has occurred on the server." });

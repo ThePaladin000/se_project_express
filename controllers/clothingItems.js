@@ -12,8 +12,7 @@ const getClothingItems = async (req, res) => {
     res.status(200).json(clothingItems);
   } catch (err) {
     res.status(500).json({
-      message: "Server error",
-      error: "An error has occurred on the server",
+      message: "An error has occurred on the server",
     });
   }
 };
@@ -31,11 +30,17 @@ const createClothingItem = async (req, res) => {
     res.status(201).json(clothingItem);
   } catch (err) {
     if (err.name === "ValidationError") {
-      res.status(BAD_REQUEST).json({ message: "Invalid clothing item data" });
+      const missingFields = Object.keys(err.errors).map(
+        (key) => err.errors[key].path
+      );
+      const message =
+        missingFields.length > 0
+          ? `Missing required fields: ${missingFields.join(", ")}`
+          : "Invalid clothing item data";
+      res.status(BAD_REQUEST).json({ message });
     } else {
       res.status(SERVER_ERROR).json({
-        message: "Server error",
-        error: "An error has occurred on the server",
+        message: "An error has occurred on the server",
       });
     }
   }
@@ -67,8 +72,7 @@ const deleteClothingItem = async (req, res) => {
       res.status(NOT_FOUND).json({ message: "Clothing item not found" });
     } else {
       res.status(SERVER_ERROR).json({
-        message: "Server error",
-        error: "An error has occurred on the server",
+        message: "An error has occurred on the server",
       });
     }
   }
@@ -78,7 +82,7 @@ const likeItem = async (req, res) => {
   try {
     const userId = req.user && req.user._id;
     const updatedItem = await ClothingItem.findByIdAndUpdate(
-      req.params.itemId,
+      req.params.clothingItemId,
       { $addToSet: { likes: userId } },
       { new: true }
     ).orFail(() => {
@@ -94,8 +98,7 @@ const likeItem = async (req, res) => {
       res.status(NOT_FOUND).json({ message: "Clothing item not found" });
     } else {
       res.status(SERVER_ERROR).json({
-        message: "Server error",
-        error: "An error has occurred on the server",
+        message: "An error has occurred on the server",
       });
     }
   }
@@ -105,7 +108,7 @@ const unlikeItem = async (req, res) => {
   try {
     const userId = req.user && req.user._id;
     const updatedItem = await ClothingItem.findByIdAndUpdate(
-      req.params.itemId,
+      req.params.clothingItemId,
       { $pull: { likes: userId } },
       { new: true }
     ).orFail(() => {
@@ -121,8 +124,7 @@ const unlikeItem = async (req, res) => {
       res.status(NOT_FOUND).json({ message: "Clothing item not found" });
     } else {
       res.status(SERVER_ERROR).json({
-        message: "Server error",
-        error: "An error has occurred on the server",
+        message: "An error has occurred on the server",
       });
     }
   }

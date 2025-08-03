@@ -5,9 +5,7 @@ const auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "An error has occurred on the server." });
+    return res.status(401).json({ message: "Authorization required" });
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -17,9 +15,7 @@ const auth = (req, res, next) => {
     req.user = payload;
     return next();
   } catch (err) {
-    return res
-      .status(401)
-      .json({ message: "An error has occurred on the server." });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
