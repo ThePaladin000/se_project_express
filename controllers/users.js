@@ -6,6 +6,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   CONFLICT,
+  UNAUTHORIZED,
   SERVER_ERROR,
 } = require("../utils/errors");
 
@@ -78,11 +79,13 @@ const login = async (req, res) => {
     console.log(err.name);
 
     if (err.message === "Incorrect email or password") {
-      return res.status(401).json({ message: "Incorrect email or password" });
+      return res
+        .status(UNAUTHORIZED)
+        .json({ message: "Incorrect email or password" });
     }
 
     return res
-      .status(401)
+      .status(UNAUTHORIZED)
       .json({ message: "An error has occurred on the server." });
   }
 };

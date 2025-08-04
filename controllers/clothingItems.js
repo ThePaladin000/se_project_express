@@ -11,7 +11,7 @@ const getClothingItems = async (req, res) => {
     const clothingItems = await ClothingItem.find({});
     res.status(200).json(clothingItems);
   } catch (err) {
-    res.status(500).json({
+    res.status(SERVER_ERROR).json({
       message: "An error has occurred on the server",
     });
   }
