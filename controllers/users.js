@@ -85,7 +85,7 @@ const login = async (req, res) => {
     }
 
     return res
-      .status(UNAUTHORIZED)
+      .status(SERVER_ERROR)
       .json({ message: "An error has occurred on the server." });
   }
 };

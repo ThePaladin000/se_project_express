@@ -8,7 +8,7 @@ const {
 
 const getClothingItems = async (req, res) => {
   try {
-    const clothingItems = await ClothingItem.find({});
+    const clothingItems = await ClothingItem.find({ owner: req.user._id });
     res.status(200).json(clothingItems);
   } catch (err) {
     res.status(SERVER_ERROR).json({
