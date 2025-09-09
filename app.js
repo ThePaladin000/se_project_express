@@ -11,10 +11,12 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 const routes = require("./routes");
+const errorHandler = require("./middlewares/error-handler");
 
 app.use(cors());
 app.use(express.json());
 app.use("/", routes);
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");

@@ -1,15 +1,37 @@
-const BAD_REQUEST = 400;
-const NOT_FOUND = 404;
-const CONFLICT = 409;
-const FORBIDDEN = 403;
-const UNAUTHORIZED = 401;
-const SERVER_ERROR = 500;
+// Custom Error Constructors
+const createCustomError = (name, statusCode, defaultMessage) => {
+  const CustomError = function CustomError(message = defaultMessage) {
+    Error.call(this);
+    this.name = name;
+    this.message = message;
+    this.statusCode = statusCode;
+    Error.captureStackTrace(this, CustomError);
+  };
+
+  CustomError.prototype = Object.create(Error.prototype);
+  CustomError.prototype.constructor = CustomError;
+
+  return CustomError;
+};
+
+const BadRequestError = createCustomError(
+  "BadRequestError",
+  400,
+  "Bad Request"
+);
+const UnauthorizedError = createCustomError(
+  "UnauthorizedError",
+  401,
+  "Unauthorized"
+);
+const ForbiddenError = createCustomError("ForbiddenError", 403, "Forbidden");
+const NotFoundError = createCustomError("NotFoundError", 404, "Not Found");
+const ConflictError = createCustomError("ConflictError", 409, "Conflict");
 
 module.exports = {
-  BAD_REQUEST,
-  NOT_FOUND,
-  CONFLICT,
-  FORBIDDEN,
-  UNAUTHORIZED,
-  SERVER_ERROR,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
 };

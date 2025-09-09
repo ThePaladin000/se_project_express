@@ -1,23 +1,20 @@
 const ClothingItem = require("../models/clothingItem");
 const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  FORBIDDEN,
-  SERVER_ERROR,
+  BadRequestError,
+  NotFoundError,
+  ForbiddenError,
 } = require("../utils/errors");
 
-const getClothingItems = async (req, res) => {
+const getClothingItems = async (req, res, next) => {
   try {
     const clothingItems = await ClothingItem.find({ owner: req.user._id });
     res.status(200).json(clothingItems);
   } catch (err) {
-    res.status(SERVER_ERROR).json({
-      message: "An error has occurred on the server",
-    });
+    next(err);
   }
 };
 
-const createClothingItem = async (req, res) => {
+const createClothingItem = async (req, res, next) => {
   try {
     const { name, weather, imageUrl } = req.body;
     const owner = req.user && req.user._id;
@@ -37,29 +34,23 @@ const createClothingItem = async (req, res) => {
         missingFields.length > 0
           ? `Missing required fields: ${missingFields.join(", ")}`
           : "Invalid clothing item data";
-      res.status(BAD_REQUEST).json({ message });
+      next(new BadRequestError(message));
     } else {
-      res.status(SERVER_ERROR).json({
-        message: "An error has occurred on the server",
-      });
+      next(err);
     }
   }
 };
 
-const deleteClothingItem = async (req, res) => {
+const deleteClothingItem = async (req, res, next) => {
   try {
     const clothingItem = await ClothingItem.findById(
       req.params.clothingItemId
     ).orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = 404;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     });
 
     if (clothingItem.owner.toString() !== req.user._id) {
-      res
-        .status(FORBIDDEN)
-        .json({ message: "You are not authorized to delete this item" });
+      next(new ForbiddenError("You are not authorized to delete this item"));
       return;
     }
 
@@ -67,18 +58,14 @@ const deleteClothingItem = async (req, res) => {
     res.status(200).json({ message: "Clothing item deleted successfully" });
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(BAD_REQUEST).json({ message: "Invalid clothing item ID" });
-    } else if (err.statusCode === 404) {
-      res.status(NOT_FOUND).json({ message: "Clothing item not found" });
+      next(new BadRequestError("Invalid clothing item ID"));
     } else {
-      res.status(SERVER_ERROR).json({
-        message: "An error has occurred on the server",
-      });
+      next(err);
     }
   }
 };
 
-const likeItem = async (req, res) => {
+const likeItem = async (req, res, next) => {
   try {
     const userId = req.user && req.user._id;
     const updatedItem = await ClothingItem.findByIdAndUpdate(
@@ -86,25 +73,19 @@ const likeItem = async (req, res) => {
       { $addToSet: { likes: userId } },
       { new: true }
     ).orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     });
     res.status(200).json(updatedItem);
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(BAD_REQUEST).json({ message: "Invalid clothing item ID" });
-    } else if (err.statusCode === NOT_FOUND) {
-      res.status(NOT_FOUND).json({ message: "Clothing item not found" });
+      next(new BadRequestError("Invalid clothing item ID"));
     } else {
-      res.status(SERVER_ERROR).json({
-        message: "An error has occurred on the server",
-      });
+      next(err);
     }
   }
 };
 
-const unlikeItem = async (req, res) => {
+const unlikeItem = async (req, res, next) => {
   try {
     const userId = req.user && req.user._id;
     const updatedItem = await ClothingItem.findByIdAndUpdate(
@@ -112,20 +93,14 @@ const unlikeItem = async (req, res) => {
       { $pull: { likes: userId } },
       { new: true }
     ).orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     });
     res.status(200).json(updatedItem);
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(BAD_REQUEST).json({ message: "Invalid clothing item ID" });
-    } else if (err.statusCode === NOT_FOUND) {
-      res.status(NOT_FOUND).json({ message: "Clothing item not found" });
+      next(new BadRequestError("Invalid clothing item ID"));
     } else {
-      res.status(SERVER_ERROR).json({
-        message: "An error has occurred on the server",
-      });
+      next(err);
     }
   }
 };
