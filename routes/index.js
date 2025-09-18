@@ -12,7 +12,7 @@ router.post("/signin", login);
 router.post("/signup", createUser);
 
 router.use("/users", auth, usersRouter);
-router.use("/items", auth, clothingItemsRouter);
+router.use("/items", clothingItemsRouter);
 
 router.use((req, res) => {
   res.status(NOT_FOUND).json({ message: "Requested resource not found" });

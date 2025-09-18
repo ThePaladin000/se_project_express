@@ -7,10 +7,15 @@ const {
 
 const getClothingItems = async (req, res, next) => {
   try {
+    // If user is not authenticated, return empty array
+    if (!req.user || !req.user._id) {
+      return res.status(200).json([]);
+    }
+
     const clothingItems = await ClothingItem.find({ owner: req.user._id });
-    res.status(200).json(clothingItems);
+    return res.status(200).json(clothingItems);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
