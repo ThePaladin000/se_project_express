@@ -1,4 +1,3 @@
-// Custom Error Constructors
 const createCustomError = (name, statusCode, defaultMessage) => {
   const CustomError = function CustomError(message = defaultMessage) {
     Error.call(this);

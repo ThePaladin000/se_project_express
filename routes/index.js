@@ -1,7 +1,7 @@
 const express = require("express");
 const { NOT_FOUND } = require("../utils/errors");
 
-const auth = require("../middlewares/auth");
+const auth = require("../middleware/auth");
 const { login, createUser } = require("../controllers/users");
 const usersRouter = require("./users");
 const clothingItemsRouter = require("./clothingItems");
