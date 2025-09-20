@@ -12,17 +12,8 @@ This API provides endpoints for managing users and clothing items. You can inter
 
 ### Deployment Instructions
 
-This server is meant to run in conjunction with the WTWR project for a full stack web app experience.
-
-Here are the steps to making this server work locally on your machine:
-1. Start the MongoDB service by running `mongod` or using MongoDB Compass
-2. Run `git clone` in your desired local folder to download the contents
-3. Rake sure you have `npm` installed. If you don't, install it from their [website](https://nodejs.org/en)
-4. Run `npm install`
-5. Make sure you have no service running on `localhost:3001`
-6. Run `npm run dev`
-7. If successful, you should see `Server is running` and `Connected to MongoDB`
-8. Congratulations! You can now test the server with postman or by deploying the frontend [WTWR](https://github.com/ThePaladin000/se_project_react) project 🎉
+This server is the backend to the [WTWR](https://github.com/ThePaladin000/se_project_react) project.
+The website is deployed [here](https://zeta.zanity.net/)
 
 ### Features
 
