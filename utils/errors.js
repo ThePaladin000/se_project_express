@@ -33,4 +33,5 @@ module.exports = {
   ForbiddenError,
   NotFoundError,
   ConflictError,
+  NOT_FOUND: 404,
 };
